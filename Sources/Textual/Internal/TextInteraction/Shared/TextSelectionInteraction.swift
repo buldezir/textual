@@ -24,11 +24,16 @@ struct TextSelectionInteraction: ViewModifier {
       if textSelection.allowsSelection {
         content
           .overlayTextLayoutCollection { layoutCollection in
-            Color.clear
-              .onChange(of: AnyTextLayoutCollection(layoutCollection), initial: true) {
-                model.setCoordinator(coordinator)
-                model.setLayoutCollection(layoutCollection)
-              }
+            // Not `onChange`: when the layout changes more than once in a frame, as
+            // text that fits in a frame does while it settles, SwiftUI runs the
+            // action once and drops the rest, which can leave the model without
+            // the text, so clicks find neither text nor links. A representable's
+            // update runs on every update, with the latest layout.
+            TextLayoutCollectionUpdater(
+              model: model,
+              coordinator: coordinator,
+              layoutCollection: layoutCollection
+            )
           }
           .modifier(PlatformTextSelectionInteraction(model: model))
       } else {
@@ -47,4 +52,49 @@ struct TextSelectionInteraction: ViewModifier {
     @usableFromInline
     @Entry var textSelection: any TextSelectability.Type = DisabledTextSelectability.self
   }
+#endif
+
+#if TEXTUAL_ENABLE_TEXT_SELECTION
+  /// Hands the model the latest layout collection. Its view takes no events,
+  /// which go to the selection overlay.
+  private struct TextLayoutCollectionUpdater {
+    let model: TextSelectionModel
+    let coordinator: TextSelectionCoordinator?
+    let layoutCollection: any TextLayoutCollection
+
+    func update() {
+      model.setCoordinator(coordinator)
+      model.setLayoutCollection(layoutCollection)
+    }
+  }
+
+  #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+    extension TextLayoutCollectionUpdater: NSViewRepresentable {
+      func makeNSView(context: Context) -> PassthroughView {
+        update()
+        return PassthroughView()
+      }
+
+      func updateNSView(_: PassthroughView, context: Context) {
+        update()
+      }
+
+      final class PassthroughView: NSView {
+        override func hitTest(_: NSPoint) -> NSView? { nil }
+      }
+    }
+  #else
+    extension TextLayoutCollectionUpdater: UIViewRepresentable {
+      func makeUIView(context: Context) -> UIView {
+        update()
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+      }
+
+      func updateUIView(_: UIView, context: Context) {
+        update()
+      }
+    }
+  #endif
 #endif

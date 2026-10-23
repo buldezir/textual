@@ -19,6 +19,12 @@ import Foundation
 final class Formatter {
   lazy var blockNodes: [BlockNode] = makeBlockNodes()
 
+  /// The blocks to export. A selection inside one list item or block quote is
+  /// that item's or quote's content: its marker or bar wasn't selected.
+  var selectedBlockNodes: [BlockNode] {
+    blockNodes.unwrapped()
+  }
+
   private let attributedString: AttributedString
 
   convenience init(_ nsAttributedString: NSAttributedString) {
@@ -369,6 +375,21 @@ extension Formatter.InlineNode {
     }
 
     self = node
+  }
+}
+
+extension Array where Element == Formatter.BlockNode {
+  fileprivate func unwrapped() -> [Formatter.BlockNode] {
+    guard count == 1 else { return self }
+    switch self[0] {
+    case .orderedList(let items) where items.count == 1,
+      .unorderedList(let items) where items.count == 1:
+      return items[0].blocks.unwrapped()
+    case .blockQuote(let children):
+      return children.unwrapped()
+    default:
+      return self
+    }
   }
 }
 

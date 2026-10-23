@@ -223,7 +223,24 @@ struct HTMLFormatterTests {
     let result = formatter.html()
 
     // then
-    #expect(result == "<blockquote>\n<p>This is a quote.</p>\n</blockquote>")
+    #expect(result == "<p>This is a quote.</p>")
+  }
+
+  @Test func partOfAListItem() throws {
+    // given: the third item of a list, as a selection inside it carries it
+    let formatter = try Formatter(
+      NSAttributedString(
+        markdown: """
+          3. Third **item**
+          """
+      )
+    )
+
+    // when
+    let result = formatter.html()
+
+    // then
+    #expect(result == "<p>Third <strong>item</strong></p>")
   }
 
   @Test func blockQuoteWithParagraphs() throws {

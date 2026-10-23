@@ -76,7 +76,7 @@ struct PlainTextFormatterTests {
     let result = formatter.plainText()
 
     // then
-    #expect(result == "  • First item\n  • Second item\n  • Third item")
+    #expect(result == "First item\nSecond item\nThird item")
   }
 
   @Test func orderedList() throws {
@@ -95,7 +95,7 @@ struct PlainTextFormatterTests {
     let result = formatter.plainText()
 
     // then
-    #expect(result == "  1. First item\n  2. Second item\n  3. Third item")
+    #expect(result == "First item\nSecond item\nThird item")
   }
 
   @Test func nestedUnorderedList() throws {
@@ -117,7 +117,7 @@ struct PlainTextFormatterTests {
     // then
     #expect(
       result
-        == "  • First item\n    • Nested item 1\n    • Nested item 2\n  • Second item"
+        == "First item\nNested item 1\nNested item 2\nSecond item"
     )
   }
 
@@ -140,7 +140,7 @@ struct PlainTextFormatterTests {
     // then
     #expect(
       result
-        == "  1. First item\n    1. Nested item 1\n    2. Nested item 2\n  2. Second item"
+        == "First item\nNested item 1\nNested item 2\nSecond item"
     )
   }
 
@@ -163,7 +163,7 @@ struct PlainTextFormatterTests {
     // then
     #expect(
       result
-        == "  1. Ordered first\n    • Unordered nested\n    • Another unordered\n  2. Ordered second"
+        == "Ordered first\nUnordered nested\nAnother unordered\nOrdered second"
     )
   }
 
@@ -181,7 +181,7 @@ struct PlainTextFormatterTests {
     let result = formatter.plainText()
 
     // then
-    #expect(result == "  This is a quote.")
+    #expect(result == "This is a quote.")
   }
 
   @Test func blockQuoteWithParagraphs() throws {
@@ -202,7 +202,7 @@ struct PlainTextFormatterTests {
     let result = formatter.plainText()
 
     // then
-    #expect(result == "Before quote.\n\n  This is a quote.\n\nAfter quote.")
+    #expect(result == "Before quote.\n\nThis is a quote.\n\nAfter quote.")
   }
 
   // MARK: - Code Blocks
@@ -265,9 +265,9 @@ struct PlainTextFormatterTests {
       )
     )
     let expected = """
-      Header 1,Header 2
-      Cell A1,Cell A2
-      Cell B1,Cell B2
+      Header 1\tHeader 2
+      Cell A1\tCell A2
+      Cell B1\tCell B2
       """
 
     // when
@@ -313,16 +313,16 @@ struct PlainTextFormatterTests {
 
       Section 1
 
-        • First point
-        • Second point
-          • Nested point
+      First point
+      Second point
+      Nested point
 
       Section 2
 
       Some text before table.
 
-      Column A,Column B
-      Value 1,Value 2
+      Column A\tColumn B
+      Value 1\tValue 2
 
       Conclusion
 
@@ -353,7 +353,58 @@ struct PlainTextFormatterTests {
     let result = formatter.plainText()
 
     // then
-    #expect(result == "Here is a paragraph.\n\n  • Item 1\n  • Item 2")
+    #expect(result == "Here is a paragraph.\n\nItem 1\nItem 2")
+  }
+
+  @Test func partOfAListItem() throws {
+    // given: the third item of a list, as a selection inside it carries it
+    let formatter = try Formatter(
+      NSAttributedString(
+        markdown: """
+          3. Third item
+          """
+      )
+    )
+
+    // when
+    let result = formatter.plainText()
+
+    // then
+    #expect(result == "Third item")
+  }
+
+  @Test func thematicBreakIsNotText() throws {
+    // given
+    let formatter = try Formatter(
+      NSAttributedString(
+        markdown: """
+          Before.
+
+          ---
+
+          After.
+          """
+      )
+    )
+
+    // when
+    let result = formatter.plainText()
+
+    // then
+    #expect(result == "Before.\n\nAfter.")
+  }
+
+  @Test func hardLineBreak() throws {
+    // given
+    let formatter = try Formatter(
+      NSAttributedString(markdown: "First line\\\nSecond line")
+    )
+
+    // when
+    let result = formatter.plainText()
+
+    // then
+    #expect(result == "First line\nSecond line")
   }
 
   @Test func emptyString() throws {

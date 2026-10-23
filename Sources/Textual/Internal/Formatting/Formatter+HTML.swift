@@ -2,7 +2,7 @@ import Foundation
 
 extension Formatter {
   func html() -> String {
-    blockNodes.renderHTML()
+    selectedBlockNodes.renderHTML()
   }
 }
 

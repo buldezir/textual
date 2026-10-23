@@ -15,10 +15,12 @@
 
     private let layout: Text.Layout
     private let origin: CGPoint
+    private let color: Color
 
-    init(layout: Text.Layout, origin: CGPoint) {
+    init(layout: Text.Layout, origin: CGPoint, color: Color) {
       self.layout = layout
       self.origin = origin
+      self.color = color
     }
 
     var body: some View {
@@ -31,7 +33,7 @@
             for selectionRect in selectionRects {
               context.fill(
                 Path(selectionRect.rect.integral),
-                with: .color(.init(nsColor: .selectedTextBackgroundColor))
+                with: .color(color)
               )
             }
           }

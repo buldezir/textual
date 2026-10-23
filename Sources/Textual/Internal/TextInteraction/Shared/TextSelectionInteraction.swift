@@ -49,10 +49,13 @@ struct TextSelectionInteraction: ViewModifier {
   extension EnvironmentValues {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    @usableFromInline
     @Entry var textSelection: any TextSelectability.Type = DisabledTextSelectability.self
   }
 #endif
+
+extension EnvironmentValues {
+  @Entry var textSelectionColor: Color? = nil
+}
 
 #if TEXTUAL_ENABLE_TEXT_SELECTION
   /// Hands the model the latest layout collection. Its view takes no events,

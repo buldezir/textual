@@ -148,15 +148,31 @@ extension TextualNamespace where Base: View {
   }
 
   /// Enables or disables text selection for ``InlineText`` and ``StructuredText``.
+  ///
+  /// Not inlinable: inlined into an app, whose build doesn't define
+  /// `TEXTUAL_ENABLE_TEXT_SELECTION`, it would do nothing.
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
-  @inlinable
   public func textSelection(_ selectability: some TextSelectability) -> some View {
     #if TEXTUAL_ENABLE_TEXT_SELECTION
       base.environment(\.textSelection, type(of: selectability))
     #else
       base
     #endif
+  }
+
+  /// Sets the colour of the selection highlight on macOS, in place of the
+  /// system's selected text background.
+  ///
+  /// The system's colour is drawn behind the text. This one is drawn over it,
+  /// so that it also shows on runs that have a background colour, such as
+  /// inline code, and on code blocks whose background is close to the
+  /// system's colour. Give it some transparency. iOS draws its own highlight,
+  /// in the tint colour.
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public func textSelectionColor(_ color: Color?) -> some View {
+    base.environment(\.textSelectionColor, color)
   }
 
   /// Sets the spacing used between table cells in ``StructuredText``.
